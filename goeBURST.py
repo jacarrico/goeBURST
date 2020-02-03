@@ -83,6 +83,24 @@ def HammVect(v1,v2):
 	ndif=sum(1 for i, j in zip(v1, v2) if i != j)
 	return ndif
 
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K(object):
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0  
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
 def EdgeComp(e1,e2):
 	u,v=e1
 	x,y=e2
@@ -93,8 +111,8 @@ def EdgeComp(e1,e2):
 		return leveluv - levelxy
 
 	for k in range (maxlen):				
-	 	maxuv = max(lvs[u][k], lvs[v][k])	
-	 	maxxy = max(lvs[x][k], lvs[y][k])
+		maxuv = max(lvs[u][k], lvs[v][k])	
+		maxxy = max(lvs[x][k], lvs[y][k])
 
 		if maxuv != maxxy:
 			return maxxy - maxuv
@@ -102,7 +120,7 @@ def EdgeComp(e1,e2):
 		minuv = min(lvs[u][k], lvs[v][k])
 		minxy = min(lvs[x][k], lvs[y][k])
 
-	 	if minuv != minxy:
+		if minuv != minxy:
 			return minxy - minuv 
 
 		maxuv = max(u,v) 
@@ -125,7 +143,8 @@ def Kruskal():
 	for i in range(nprof):
 		for j in range(i +1, nprof):
 			edges.append([i,j])
-	edges.sort(EdgeComp) 
+	#edges.sort(cmp=EdgeComp)
+	edges=sorted(edges, key=cmp_to_key(EdgeComp))
 
 	# var uf = new UnionFind(n)
 	uf = UF(nprof)
@@ -158,17 +177,18 @@ def CalcLVs():
 
 	return lvs,maxlen
 
- 
+
 def main():
 	try:
 		profiles_in = sys.argv[1]
 	except IndexError:
-		print "blablabla"
+		print("blablabla")
+
 	profiles = LoadProfiles(profiles_in)
 	#print profiles
 	lvs,maxlen=CalcLVs()
 	tree=Kruskal()
-	print tree
+	print(tree)
 
 if __name__ == "__main__":
 	main()
