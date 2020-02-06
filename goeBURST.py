@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-import numpy as np
-import pandas as pd
-
 
 #Class UF from 	https://www.ics.uci.edu/~eppstein/PADS/UnionFind.py
 class UF:
@@ -82,42 +79,6 @@ def LoadProfiles(profiles_in):
 	#TODO Return Unique profiles only 
 	return profiles
 
-
-def _validate_vector(u, dtype=None):
-    # XXX Is order='c' really necessary?
-    u = np.asarray(u, dtype=dtype, order='c').squeeze()
-    # Ensure values such as u=1 and u=[1] still return 1-D arrays.
-    u = np.atleast_1d(u)
-    if u.ndim > 1:
-        raise ValueError("Input vector should be 1-D.")
-    return u
-
-def hamming_no_nan(u,v):
-    
-    u = _validate_vector(u)
-    v = _validate_vector(v)
-    uv =np.matrix.transpose(np.column_stack((u,v)))
-    uvc=uv[:, ~np.isnan(uv).any(axis=0)]
-
-    u = uvc[0,:]
-    v = uvc[1,:]
-
-    return np.sum(u != v)
-
-def hamming_no_zeros(u,v):
-	u = _validate_vector(u)
-	v = _validate_vector(v)
-    
-	uv =np.matrix.transpose(np.column_stack((u,v)))
-	#print(uv)
-	#print(np.where(uv == 0))
-
-	uvc = np.delete(uv,np.where(uv == 0)[1],axis=1)
-	u = uvc[0,:]
-	v = uvc[1,:]
-
-	return np.sum(u != v)
-
 def HammVect(v1,v2):
 	ndif=sum(1 for i, j in zip(v1, v2) if i != j)
 	return ndif
@@ -140,14 +101,11 @@ def cmp_to_key(mycmp):
         def __ne__(self, other):
             return mycmp(self.obj, other.obj) != 0
     return K
-
 def EdgeComp(e1,e2):
 	u,v=e1
 	x,y=e2
-	#leveluv = HammVect(profiles[u],profiles[v])  
-	#levelxy = HammVect(profiles[x],profiles[y])
-	leveluv = hamming_no_zeros(profiles.iloc[u],profiles.iloc[v])  
-	levelxy = hamming_no_zeros(profiles.iloc[x],profiles.iloc[y])
+	leveluv = HammVect(profiles[u],profiles[v])  
+	levelxy = HammVect(profiles[x],profiles[y])
 
 	if leveluv != levelxy:
 		return leveluv - levelxy
@@ -177,10 +135,9 @@ def EdgeComp(e1,e2):
 		if minuv != minxy:
 			return minxy - minuv
 
-def Kruskal(profiles):
+def Kruskal():
 
 	global edges
-	#global profiles
 	edges=[] 
 	nprof=len(profiles)
 	for i in range(nprof):
@@ -204,54 +161,33 @@ def Kruskal(profiles):
 	
 	return tree
 
-def CalcLVs(profiles):
-	#global profiles
-	#print(profiles)
-	#global maxlen
-	#global lvs
-	
-	maxlen= len(profiles.columns)
+def CalcLVs():
+	global maxlen
+	global lvs
+	maxlen= len(profiles[1])
 	nprof=len(profiles)
-	print(maxlen)
-	print(nprof)
 
 	lvs=[ [0]*maxlen for i in range(nprof)]
 
 	for i in range(nprof):
 		for j in range(i+1,nprof):
-			#diff=HammVect(profiles[i],profiles[j])
-			diff=hamming_no_zeros(profiles.iloc[i],profiles.iloc[j])
+			diff=HammVect(profiles[i],profiles[j])
 			lvs[i][diff-1]+=1
 			lvs[j][diff-1]+=1
 
-	return lvs,maxlen,profiles
+	return lvs,maxlen
 
 
 def main():
 	try:
 		profiles_in = sys.argv[1]
 	except IndexError:
-		print("Input file is needed")
+		print("blablabla")
 
-	#profiles = LoadProfiles(profiles_in)
-	global profiles
-	profiles = pd.read_csv(profiles_in, sep="\t",header=None) 
-	print('======PROFILES=====')
-	print(profiles)
-	print('====END OF PROFILES=====')
+	profiles = LoadProfiles(profiles_in)
 	#print profiles
-	global lvs, maxlen
-	lvs,maxlen,profiles=CalcLVs(profiles)
-	#print('======lvs=====')
-	#print(lvs)
-	#print('====END OF lvs=====')
-	#print('======maxlen=====')
-	#print(maxlen)
-	#print('====END OF maxlen=====')
-
-
-	tree=Kruskal(profiles)
-	print('======TREE=====')	
+	lvs,maxlen=CalcLVs()
+	tree=Kruskal()
 	print(tree)
 
 if __name__ == "__main__":
