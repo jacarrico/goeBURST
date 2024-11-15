@@ -126,14 +126,14 @@ def EdgeComp(e1,e2):
 		maxuv = max(u,v) 
 		maxxy = max(x,y)
 
-		if maxuv != maxxy:
-			return maxxy - maxuv
+	if maxuv != maxxy:
+		return maxxy - maxuv
 
-		minuv = min(u,v)
-		minxy = min(x,y)
+	minuv = min(u,v)
+	minxy = min(x,y)
 
-		if minuv != minxy:
-			return minxy - minuv
+	if minuv != minxy:
+		return minxy - minuv
 
 def Kruskal():
 
